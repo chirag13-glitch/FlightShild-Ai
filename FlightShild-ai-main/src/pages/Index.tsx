@@ -7,9 +7,19 @@ import Footer from "@/components/Footer";
 
 export type FlightStatus = "idle" | "safe" | "moderate" | "severe";
 
+export interface PredictionResult {
+  prediction: string;
+  risk_score: number;
+  cat_risk: string;
+  wind_shear_factor: string;
+  safety_advisory: string;
+  recommended_altitude: string;
+}
+
 const Index = () => {
   const [status, setStatus] = useState<FlightStatus>("idle");
   const [isLoading, setIsLoading] = useState(false);
+  const [resultData, setResultData] = useState<PredictionResult | null>(null);
   const [form, setForm] = useState({
     source: "",
     destination: "",
@@ -26,6 +36,7 @@ const Index = () => {
   const handlePredict = async () => {
     setIsLoading(true);
     setStatus("idle");
+    setResultData(null);
 
     try {
       const response = await fetch("http://127.0.0.1:8000/predict", {
@@ -34,12 +45,17 @@ const Index = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          wind_speed: parseFloat(form.windSpeed) || 0,
+          source: form.source,
+          destination: form.destination,
           altitude: parseFloat(form.altitude) || 35000,
+          wind_speed: parseFloat(form.windSpeed) || 0,
+          temperature: form.temperature !== "" ? parseFloat(form.temperature) : -40,
+          pressure: form.pressure !== "" ? parseFloat(form.pressure) : 1013,
         }),
       });
 
       const data = await response.json();
+      setResultData(data);
       const prediction: string = data.prediction;
 
       if (prediction === "Severe Turbulence") {
@@ -64,6 +80,7 @@ const Index = () => {
       <PredictionSection
         status={status}
         isLoading={isLoading}
+        resultData={resultData}
         form={form}
         handleChange={handleChange}
         handlePredict={handlePredict}
@@ -79,3 +96,4 @@ const Index = () => {
 };
 
 export default Index;
+

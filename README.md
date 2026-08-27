@@ -99,8 +99,12 @@ Request:
 
 ```json
 {
+  "source": "New York",
+  "destination": "London",
+  "altitude": 35000,
   "wind_speed": 120,
-  "altitude": 35000
+  "temperature": -40,
+  "pressure": 1013
 }
 ```
 
@@ -108,7 +112,12 @@ Response:
 
 ```json
 {
-  "prediction": "Moderate Turbulence"
+  "prediction": "Severe Turbulence",
+  "risk_score": 93.0,
+  "cat_risk": "High",
+  "wind_shear_factor": "Severe Jet Shear",
+  "safety_advisory": "ALERT: High risk of severe turbulence & jet stream shear. Continuous seatbelt sign required. Request climb or reroute.",
+  "recommended_altitude": "Climb to FL390 or descend to FL290 to exit shear layer"
 }
 ```
 
