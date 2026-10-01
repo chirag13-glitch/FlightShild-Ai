@@ -16,8 +16,38 @@ export interface PredictionResult {
   recommended_altitude: string;
 }
 
+export interface RoutePlan {
+  source: string;
+  destination: string;
+  source_coords: [number, number];
+  destination_coords: [number, number];
+  turbulence_status: string;
+  has_reroute: boolean;
+  hazard_zone?: {
+    center: [number, number];
+    radius_km: number;
+    severity: string;
+  } | null;
+  direct_route: [number, number][];
+  optimized_route: [number, number][];
+  metrics: {
+    direct_distance_km: number;
+    optimized_distance_km: number;
+    extra_distance_km: number;
+    direct_flight_time_mins: number;
+    optimized_flight_time_mins: number;
+    extra_time_mins: number;
+    original_altitude: number;
+    recommended_altitude: number;
+    altitude_advice: string;
+    direct_safety_score: number;
+    optimized_safety_score: number;
+  };
+}
+
 const Index = () => {
   const [status, setStatus] = useState<FlightStatus>("idle");
+  const [routePlan, setRoutePlan] = useState<RoutePlan | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [resultData, setResultData] = useState<PredictionResult | null>(null);
   const [form, setForm] = useState({
@@ -45,8 +75,8 @@ const Index = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          source: form.source,
-          destination: form.destination,
+          source: form.source || undefined,
+          destination: form.destination || undefined,
           altitude: parseFloat(form.altitude) || 35000,
           wind_speed: parseFloat(form.windSpeed) || 0,
           temperature: form.temperature !== "" ? parseFloat(form.temperature) : -40,
@@ -57,6 +87,10 @@ const Index = () => {
       const data = await response.json();
       setResultData(data);
       const prediction: string = data.prediction;
+
+      if (data.route_plan) {
+        setRoutePlan(data.route_plan);
+      }
 
       if (prediction === "Severe Turbulence") {
         setStatus("severe");
@@ -89,6 +123,7 @@ const Index = () => {
         status={status}
         sourceCity={form.source}
         destinationCity={form.destination}
+        routePlan={routePlan}
       />
       <Footer />
     </div>
@@ -96,4 +131,3 @@ const Index = () => {
 };
 
 export default Index;
-
